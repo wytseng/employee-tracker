@@ -18,19 +18,19 @@ function actionPrompt() {
       name: "action",
       message: "What would you like to do?",
       choices: [
+        "View All Departments",
+        "View All Roles",
         "View All Employees",
         // "View All Employees By Department",
         // "View All Employees By Manager",
+        "Add A Department",
+        "Add A Role",
         "Add An Employee",
-        // "Remove Employee",
         "Update An Employee Role",
         // "Update Employee Manager",
-        "View All Roles",
-        "Add A Role",
-        // "Remove A Role",
-        "View All Departments",
-        "Add A Department",
         // "Remove A Department",
+        // "Remove Employee",
+        // "Remove A Role",
         // "View Total Utilized Budget By Department",
         "Quit"
       ]
@@ -38,6 +38,12 @@ function actionPrompt() {
   ])
     .then((response) => {
       switch (response.action) {
+        case "View All Departments":
+          viewAllDept();
+          break;
+        case "View All Roles":
+          viewAllRoles();
+          break;
         case "View All Employees":
           viewAll();
           break;
@@ -47,35 +53,29 @@ function actionPrompt() {
         // case "View All Employees By Managers":
         //   viewAllByManager();
         //   break;
+        case "Add A Department":
+          addDept();
+          break;
+        case "Add A Role":
+          addRole();
+          break;
         case "Add An Employee":
           addEmployee();
           break;
-        // case "Remove Employee":
-        //   deleteEmployee();
-        //   break;
         case "Update An Employee Role":
           updateEmployeeRole();
           break;
         // case "Update Employee Manager":
         //   updateEmployeeManager();
         //   break;
-        case "View All Roles":
-          viewAllRoles();
-          break;
-        case "Add A Role":
-          addRole();
-          break;
+        // case "Remove Department":
+        //   removeDept();
+        //   break;
         // case "Remove A Role":
         //   removeRole();
         //   break;
-        case "View All Departments":
-          viewAllDept();
-          break;
-        case "Add A Department":
-          addDept();
-          break;
-        // case "Remove Department":
-        //   removeDept();
+        // case "Remove Employee":
+        //   deleteEmployee();
         //   break;
         // case "View Total Utilized Budget By Department":
         //   viewTotalBudget();
@@ -87,6 +87,26 @@ function actionPrompt() {
     })
 }
 
+// Displays a table of all departments in the DB
+function viewAllDept() {
+  db.findAllDept()
+  .then(([rows]) => {
+    console.log(`\n`);
+    console.table(rows); 
+  })
+  .then(() => actionPrompt());
+}
+
+// Returns a table of all roles in the DB
+function viewAllRoles() {
+  db.findAllRoles()
+  .then(([rows]) => {
+    console.log(`\n`);
+    console.table(rows);
+  })
+  .then(() => actionPrompt());
+}
+
 // Returns a table of all Employees in the DB with information on their role and direst manager.
 function viewAll() {
   db.findAll()
@@ -94,6 +114,55 @@ function viewAll() {
     console.log('\n');
     console.table(rows) })
   .then(() => actionPrompt());
+}
+
+
+// Adds a department to the DB
+function addDept() {
+  inquirer.prompt([
+    {
+      type: 'input',
+      name: 'name',
+      message: 'What is the name of the department?'
+    }
+  ])
+  .then(response => {
+    db.addDept(response)
+    .then(() => actionPrompt());
+  })
+}
+
+// Adds a new role to the DB
+function addRole() {
+  db.findAllDept()
+  .then(([rows]) => {
+    const departmentChoices = rows.map(({ id, name }) => ({
+      name: name, 
+      value: id
+    }));
+    prompt([
+      {
+        type: 'input',
+        name: 'title',
+        message: 'What is the title of the role?'
+      },
+      {
+        type: 'input',
+        name: 'salary',
+        message: 'What is the salary of the role?'
+      },
+      {
+        type: 'list',
+        name: 'department_id',
+        message: 'Which department does the role belong to?',
+        choices: departmentChoices
+      }
+    ])
+      .then(response => {
+        db.addRole(response)
+        .then(() => actionPrompt());
+      })
+  })
 }
 
 function addEmployee() {
@@ -162,76 +231,47 @@ function addEmployee() {
   })
 }
 
+// Updates an employee's role
 function updateEmployeeRole() {
-  console.log('updating employee role');
-  actionPrompt();
-}
-
-// Returns a table of all roles in the DB
-function viewAllRoles() {
-  db.findAllRoles()
+  db.findAll()
   .then(([rows]) => {
-    console.log(`\n`);
-    console.table(rows);
-  })
-  .then(() => actionPrompt());
-}
-
-// Adds a new role to the DB
-function addRole() {
-  db.findAllDept()
-  .then(([rows]) => {
-    const departmentChoices = rows.map(({ id, name }) => ({
-      name: name, 
+    const employeeChoice = rows.map(({ id, first_name, last_name }) => ({
+      name: `${first_name} ${last_name}`,
       value: id
     }));
+
     prompt([
       {
-        type: 'input',
-        name: 'title',
-        message: 'What is the title of the role?'
-      },
-      {
-        type: 'input',
-        name: 'salary',
-        message: 'What is the salary of the role?'
-      },
-      {
         type: 'list',
-        name: 'department_id',
-        message: 'Which department does the role belong to?',
-        choices: departmentChoices
+        name: 'employeeId',
+        message: "Which employee's role do you want to update?",
+        choices: employeeChoice
       }
     ])
-      .then(response => {
-        db.addRole(response)
-        .then(() => actionPrompt());
-      })
-  })
-}
+    .then(response => {
+      let employeeId = response.employeeId;
 
-// Displays a table of all departments in the DB
-function viewAllDept() {
-  db.findAllDept()
-  .then(([rows]) => {
-    console.log(`\n`);
-    console.table(rows); 
-  })
-  .then(() => actionPrompt());
-}
+      db.findAllRoles()
+      .then(([rows]) => {
+        const rolesChoices = rows.map(({ id, title }) => ({
+          name: title, 
+          value: id
+        }));
 
-// Adds a department to the DB
-function addDept() {
-  inquirer.prompt([
-    {
-      type: 'input',
-      name: 'name',
-      message: 'What is the name of the department?'
-    }
-  ])
-  .then(response => {
-    db.addDept(response)
-    .then(() => actionPrompt());
+        prompt([
+          {
+            type: 'list',
+            name: 'role_id',
+            message: "Which role do you wnat to assing the selected employee?",
+            choices: rolesChoices
+          }
+        ])
+        .then(response => {
+          db.updateEmployeeRole(employeeId, response)
+          .then(() => actionPrompt())
+        })
+      }) 
+    })
   })
 }
 

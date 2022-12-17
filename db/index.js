@@ -62,6 +62,17 @@ class DB {
         .then(console.log(`\nAdded ${data.name} department to the database.`))
     );
   }
+
+  updateEmployeeRole(employeeId, data) {
+    const updateArr = [data,
+      { id: employeeId }
+    ]
+    return (
+      this.connection.promise().query( 
+        `UPDATE employees SET ? WHERE ?`, updateArr)
+        .then(console.log(`\nUpdated employee's role`))
+    )
+  }
 }
 
 module.exports = new DB(connection)
