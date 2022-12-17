@@ -28,10 +28,10 @@ function actionPrompt() {
         "Add An Employee",
         "Update An Employee's Role",
         "Update An Employee's Manager",
-        // "Remove A Department",
-        // "Remove Employee",
-        // "Remove A Role",
-        // "View Total Utilized Budget By Department",
+        "Remove A Department",
+        "Remove A Role",
+        "Remove A Employee",
+        "View Total Utilized Budget By Department",
         "Quit"
       ]
     }
@@ -68,18 +68,18 @@ function actionPrompt() {
         case "Update An Employee's Manager":
           updateEmployeeManager();
           break;
-        // case "Remove Department":
-        //   removeDept();
-        //   break;
-        // case "Remove A Role":
-        //   removeRole();
-        //   break;
-        // case "Remove Employee":
-        //   deleteEmployee();
-        //   break;
-        // case "View Total Utilized Budget By Department":
-        //   viewTotalBudget();
-        //   break;
+        case "Remove A Department":
+          removeDept();
+          break;
+        case "Remove A Role":
+          removeRole();
+          break;
+        case "Remove A Employee":
+          removeEmployee();
+          break;
+        case "View Total Utilized Budget By Department":
+          viewTotalBudget();
+          break;
         case "Quit":
           quit();
           break;
@@ -372,6 +372,84 @@ function updateEmployeeManager() {
           .then(() => actionPrompt())
           })
       }) 
+    })
+  })
+}
+
+function removeDept() {
+  db.findAllDept()
+  .then(([rows]) => {
+    const departmentChoices = rows.map(({ id, name }) => ({
+      name: name, 
+      value: id
+    }));
+
+    prompt([
+      {
+        type: 'list',
+        name: 'id',
+        message: "Which department would you like to remove? (Warning: This will also remove associated roles and employees)",
+        choices: departmentChoices
+      }
+    ])
+    .then(response => {
+      db.deleteDept(response)
+      .then(() => {
+        console.log('Removed department from database.');
+        actionPrompt();
+      })
+    })
+  })
+}
+
+function removeRole() {
+  db.findAllRoles()
+  .then(([rows]) => {
+    const rolesChoices = rows.map(({ id, title }) => ({
+      name: title, 
+      value: id
+    }));
+
+    prompt([
+      {
+        type: 'list',
+        name: 'id',
+        message: "Which role do you want to remove? (Warning: This will also remove employees)",
+        choices: rolesChoices 
+      }
+    ])
+    .then(response => {
+      db.deleteRole(response)
+      .then(() => {
+        console.log('Removed role from database.');
+        actionPrompt();
+      })
+    })
+  })
+}
+
+function removeEmployee() {
+  db.findAll()
+  .then(([rows]) => {
+    const employeeChoices = rows.map(({ id, first_name, last_name}) => ({
+      name: `${first_name} ${last_name}`,
+      value: id
+    }));
+
+    prompt([
+      {
+        type: 'list',
+        name: 'id',
+        message: "Which employee do you want to remove?",
+        choices: employeeChoices
+      }
+    ])
+    .then(response => {
+      db.deleteEmployee(response)
+      .then(() => {
+        console.log("Removed employee from the database.");
+        actionPrompt();
+      })
     })
   })
 }

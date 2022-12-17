@@ -81,8 +81,19 @@ class DB {
     return (
       this.connection.promise().query( 
         `UPDATE employees SET ? WHERE ?`, updateArr)
-        .then(console.log(`\nUpdated employee's ${attr}.`))
-    )
+        .then(console.log(`\nUpdated employee's ${attr}.`)));
+  }
+
+  deleteDept(data) {
+    return this.connection.promise().query(`DELETE FROM departments WHERE ?`, data );
+  }
+
+  deleteRole(data) {
+    return this.connection.promise().query(`DELETE FROM roles WHERE ? `, data);
+  }
+
+  deleteEmployee(data) {
+    return this.connection.promise().query(`DELETE FROM employees WHERE ?`, data);
   }
 }
 
