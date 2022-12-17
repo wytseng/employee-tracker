@@ -172,7 +172,7 @@ function viewAllByManager() {
 
 // Adds a department to the DB
 function addDept() {
-  inquirer.prompt([
+  prompt([
     {
       type: 'input',
       name: 'name',
