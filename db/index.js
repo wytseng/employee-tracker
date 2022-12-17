@@ -7,18 +7,6 @@ class DB {
     this.connection = connection;
   }
 
-  rolesChoices() {
-    this.findAllRoles()
-    .then(([rows]) => {
-      const rolesChoices = rows.map(({ id, title }) => ({
-        name: title, 
-        value: id
-      }));
-      console.log(rolesChoices)
-      return rolesChoices
-    })
-  }
-
   findAll() {
     return (
       this.connection.promise().query(
@@ -26,6 +14,12 @@ class DB {
         LEFT JOIN roles ON employees.role_id = roles.id
         LEFT JOIN departments ON roles.department_id = departments.id
         LEFT JOIN employees AS manager ON employees.manager_id = manager.id;`));
+  }
+
+  findAllManagers(employeeId) {
+    return (
+      this.connection.promise().query(
+        `SELECT id, first_name, last_name FROM employees WHERE employees.id != ?`, employeeId));
   }
 
   findAllRoles() {
@@ -37,6 +31,23 @@ class DB {
 
   findAllDept() {
     return this.connection.promise().query(`SELECT * FROM departments`);
+  }
+
+  findEmployeesByDept(deptId) {
+    return (
+      this.connection.promise().query(
+        `SELECT employees.id, employees.first_name, employees.last_name, roles.title FROM employees 
+        LEFT JOIN roles ON employees.role_id = roles.id
+        WHERE roles.department_id = ?`, deptId));
+  }
+
+  findEmployeesByManager(managerId) {
+    return (
+      this.connection.promise().query(
+        `SELECT employees.id, employees.first_name, employees.last_name, departments.name AS department, roles.title FROM employees 
+        LEFT JOIN roles ON employees.role_id = roles.id
+        LEFT JOIN departments ON roles.department_id = departments.id
+        WHERE employees.manager_id = ?`, managerId));
   }
 
   addEmployee(data) {
@@ -63,14 +74,14 @@ class DB {
     );
   }
 
-  updateEmployeeRole(employeeId, data) {
+  updateEmployee(attr, employeeId, data) {
     const updateArr = [data,
       { id: employeeId }
     ]
     return (
       this.connection.promise().query( 
         `UPDATE employees SET ? WHERE ?`, updateArr)
-        .then(console.log(`\nUpdated employee's role`))
+        .then(console.log(`\nUpdated employee's ${attr}.`))
     )
   }
 }

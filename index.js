@@ -21,13 +21,13 @@ function actionPrompt() {
         "View All Departments",
         "View All Roles",
         "View All Employees",
-        // "View All Employees By Department",
-        // "View All Employees By Manager",
+        "View All Employees By Department",
+        "View All Employees By Manager",
         "Add A Department",
         "Add A Role",
         "Add An Employee",
-        "Update An Employee Role",
-        // "Update Employee Manager",
+        "Update An Employee's Role",
+        "Update An Employee's Manager",
         // "Remove A Department",
         // "Remove Employee",
         // "Remove A Role",
@@ -47,12 +47,12 @@ function actionPrompt() {
         case "View All Employees":
           viewAll();
           break;
-        // case "View All Employees By Department":
-        //   viewAllByDept();
-        //   break;
-        // case "View All Employees By Managers":
-        //   viewAllByManager();
-        //   break;
+        case "View All Employees By Department":
+          viewAllByDept();
+          break;
+        case "View All Employees By Manager":
+          viewAllByManager();
+          break;
         case "Add A Department":
           addDept();
           break;
@@ -62,12 +62,12 @@ function actionPrompt() {
         case "Add An Employee":
           addEmployee();
           break;
-        case "Update An Employee Role":
+        case "Update An Employee's Role":
           updateEmployeeRole();
           break;
-        // case "Update Employee Manager":
-        //   updateEmployeeManager();
-        //   break;
+        case "Update An Employee's Manager":
+          updateEmployeeManager();
+          break;
         // case "Remove Department":
         //   removeDept();
         //   break;
@@ -116,6 +116,59 @@ function viewAll() {
   .then(() => actionPrompt());
 }
 
+function viewAllByDept() {
+  db.findAllDept()
+  .then(([rows]) => {
+    const departmentChoices = rows.map(({ id, name }) => ({
+      name: name, 
+      value: id
+    }));
+    
+    prompt([
+      {
+        type: 'list',
+        name: 'departmentId',
+        message: "Which department would you like to see employees for?",
+        choices: departmentChoices
+      }
+    ])
+    .then(response => {
+      db.findEmployeesByDept(response.departmentId)
+      .then(([rows]) => {
+        console.log(`\n`);
+        rows.length === 0 ? console.log('The selected department does not have employees.') : console.table(rows);
+      })
+      .then(() => actionPrompt())
+    })
+  })
+}
+
+function viewAllByManager() {
+  db.findAll()
+  .then(([rows]) => {
+    const employeeChoices = rows.map(({ id, first_name, last_name }) => ({
+      name: `${first_name} ${last_name}`,
+      value: id
+    }));
+
+    prompt([
+      {
+        type: 'list',
+        name: 'managerId',
+        message: 'Which employee do you want to see direct reports for?',
+        choices: employeeChoices
+      }
+    ])
+    .then(response => {
+      db.findEmployeesByManager(response.managerId)
+      .then(([rows]) => {
+        console.log(`\n`);
+        rows.length === 0 ? console.log('The selected employee does not have direct reports.') : console.table(rows)
+      })
+      .then(() => actionPrompt())
+    })
+  })
+}
 
 // Adds a department to the DB
 function addDept() {
@@ -207,6 +260,8 @@ function addEmployee() {
             value: id
           }));
 
+          managerChoices.unshift({ name: "None", value: null });
+
           prompt([
             {
               type: 'list',
@@ -267,9 +322,55 @@ function updateEmployeeRole() {
           }
         ])
         .then(response => {
-          db.updateEmployeeRole(employeeId, response)
+          db.updateEmployee("role", employeeId, response)
           .then(() => actionPrompt())
         })
+      }) 
+    })
+  })
+}
+
+// Updates an employee's manager
+function updateEmployeeManager() {
+  db.findAll()
+  .then(([rows]) => {
+    const employeeChoices = rows.map(({ id, first_name, last_name }) => ({
+      name: `${first_name} ${last_name}`,
+      value: id
+    }));
+
+    prompt([
+      {
+        type: 'list',
+        name: 'employeeId',
+        message: "Which employee's manager do you want to update?",
+        choices: employeeChoices
+      }
+    ])
+    .then(response => {
+      let employeeId = response.employeeId;
+
+      db.findAllManagers(employeeId)
+      .then(([rows]) => {
+        const managerChoices = rows.map(({ id, first_name, last_name}) => ({
+          name: `${first_name} ${last_name}`,
+          value: id
+        }));
+
+        managerChoices.unshift({ name: "None", value: null });
+
+        prompt([
+          {
+            type: 'list',
+            name: 'manager_id',
+            message: "Which employee do you want to set as manager for the selected employee?",
+            choices: managerChoices
+          }
+        ])
+        .then(response => {
+          db.updateEmployee("manager", employeeId, response)
+          .then(() => actionPrompt())
+          })
       }) 
     })
   })
