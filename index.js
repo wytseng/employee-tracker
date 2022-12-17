@@ -31,7 +31,7 @@ function actionPrompt() {
         "Remove A Department",
         "Remove A Role",
         "Remove A Employee",
-        "View Total Utilized Budget By Department",
+        // "View Total Utilized Budget By Department",
         "Quit"
       ]
     }
@@ -77,9 +77,9 @@ function actionPrompt() {
         case "Remove A Employee":
           removeEmployee();
           break;
-        case "View Total Utilized Budget By Department":
-          viewTotalBudget();
-          break;
+        // case "View Total Utilized Budget By Department":
+        //   viewTotalBudget();
+        //   break;
         case "Quit":
           quit();
           break;
@@ -453,6 +453,10 @@ function removeEmployee() {
     })
   })
 }
+
+// function viewTotalBudget() {
+
+// }
 
 // Quit the application
 function quit() {

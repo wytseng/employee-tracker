@@ -50,6 +50,14 @@ class DB {
         WHERE employees.manager_id = ?`, managerId));
   }
 
+  // getDeptBudget(){
+  //   return(
+  //     this.connection.promise().query(
+  //       ''
+  //     )
+  //   )
+  // }
+
   addEmployee(data) {
     return (
       this.connection.promise().query(
