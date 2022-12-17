@@ -1,6 +1,5 @@
 const mysql = require('mysql2');
 const connection = require('../config');
-const cTable = require('console.table');
 
 class DB {
   constructor(connection) {
@@ -26,11 +25,12 @@ class DB {
     return (
       this.connection.promise().query(
         `SELECT roles.id, roles.title, departments.name AS department, roles.salary FROM roles
-        LEFT JOIN departments ON roles.department_id = departments.id;`));
+        LEFT JOIN departments ON roles.department_id = departments.id
+        ORDER BY roles.id;`));
   }
 
   findAllDept() {
-    return this.connection.promise().query(`SELECT * FROM departments`);
+    return this.connection.promise().query(`SELECT * FROM departments ORDER BY id`);
   }
 
   findEmployeesByDept(deptId) {
@@ -50,19 +50,21 @@ class DB {
         WHERE employees.manager_id = ?`, managerId));
   }
 
-  // getDeptBudget(){
-  //   return(
-  //     this.connection.promise().query(
-  //       ''
-  //     )
-  //   )
-  // }
+  getDeptBudget(){
+    return(
+      this.connection.promise().query(
+        `SELECT departments.id, departments.name, SUM(roles.salary) AS utilized_budget FROM departments
+        RIGHT JOIN roles ON departments.id = roles.department_id
+        RIGHT JOIN employees ON employees.role_id = roles.id
+        GROUP BY departments.id`)
+    );
+  }
 
   addEmployee(data) {
     return (
       this.connection.promise().query(
         `INSERT INTO employees SET ?`, data) 
-        .then(console.log(`\nAdded ${data.first_name} ${data.last_name} to the database.`))
+        .then(console.log(`Added ${data.first_name} ${data.last_name} to the database.`))
     );
   }
 
@@ -70,7 +72,7 @@ class DB {
     return (
       this.connection.promise().query(
         `INSERT INTO roles SET ?`, data)
-        .then(console.log(`\nAdded ${data.title} role to the database.`))
+        .then(console.log(`Added ${data.title} role to the database.`))
     );
   }
 
@@ -78,7 +80,7 @@ class DB {
     return (
       this.connection.promise().query(
         `INSERT INTO departments SET ?`, data)
-        .then(console.log(`\nAdded ${data.name} department to the database.`))
+        .then(console.log(`Added ${data.name} department to the database.`))
     );
   }
 
@@ -89,7 +91,7 @@ class DB {
     return (
       this.connection.promise().query( 
         `UPDATE employees SET ? WHERE ?`, updateArr)
-        .then(console.log(`\nUpdated employee's ${attr}.`)));
+        .then(console.log(`Updated employee's ${attr}.`)));
   }
 
   deleteDept(data) {

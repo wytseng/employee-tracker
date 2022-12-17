@@ -1,13 +1,25 @@
 const { prompt } = require('inquirer');
-const { deptChoices, rolesChoices } = require('./db');
 const db = require('./db');
+const cTable = require('console.table');
+const logo = require('asciiart-logo');
+const config = require('./package.json');
 
 init();
 
 function init() {
-  console.log("Welcome to the employee tracker.")
+  console.log(logo({
+    name: "Employee Tracker",
+    font: "Broadway KB",
+    lineChars: 7,
+    padding: 2,
+    margin: 2,
+    borderColor: 'bold-green',
+    logoColor: 'grey',
+  })
+  .emptyLine()
+  .center("Welcome to the employee tracker.")
+  .render());
 
-  // calls on the prompt;
   actionPrompt();
 }
 
@@ -31,7 +43,7 @@ function actionPrompt() {
         "Remove A Department",
         "Remove A Role",
         "Remove A Employee",
-        // "View Total Utilized Budget By Department",
+        "View Total Utilized Budget By Department",
         "Quit"
       ]
     }
@@ -77,9 +89,9 @@ function actionPrompt() {
         case "Remove A Employee":
           removeEmployee();
           break;
-        // case "View Total Utilized Budget By Department":
-        //   viewTotalBudget();
-        //   break;
+        case "View Total Utilized Budget By Department":
+          viewTotalBudget();
+          break;
         case "Quit":
           quit();
           break;
@@ -135,7 +147,6 @@ function viewAllByDept() {
     .then(response => {
       db.findEmployeesByDept(response.departmentId)
       .then(([rows]) => {
-        console.log(`\n`);
         rows.length === 0 ? console.log('The selected department does not have employees.') : console.table(rows);
       })
       .then(() => actionPrompt())
@@ -162,7 +173,6 @@ function viewAllByManager() {
     .then(response => {
       db.findEmployeesByManager(response.managerId)
       .then(([rows]) => {
-        console.log(`\n`);
         rows.length === 0 ? console.log('The selected employee does not have direct reports.') : console.table(rows)
       })
       .then(() => actionPrompt())
@@ -454,9 +464,15 @@ function removeEmployee() {
   })
 }
 
-// function viewTotalBudget() {
-
-// }
+// Display the total budget for each department
+function viewTotalBudget() {
+  db.getDeptBudget()
+  .then(([rows]) => {
+    console.log(`\n`);
+    console.table(rows);
+  })
+  .then(() => actionPrompt())
+}
 
 // Quit the application
 function quit() {
