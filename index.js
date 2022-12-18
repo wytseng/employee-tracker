@@ -23,6 +23,7 @@ function init() {
   actionPrompt();
 }
 
+// App menu
 function actionPrompt() {
   prompt([
     {
@@ -128,6 +129,7 @@ function viewAll() {
   .then(() => actionPrompt());
 }
 
+// Returns a table of all Employees in the DB that belongs to the selected department
 function viewAllByDept() {
   db.findAllDept()
   .then(([rows]) => {
@@ -154,6 +156,7 @@ function viewAllByDept() {
   })
 }
 
+// Returns a table of all Employees in the DB that reports to the selected manager.
 function viewAllByManager() {
   db.findAll()
   .then(([rows]) => {
@@ -228,6 +231,7 @@ function addRole() {
   })
 }
 
+// Adds an employee to the DB.
 function addEmployee() {
   prompt([
     {
@@ -386,6 +390,7 @@ function updateEmployeeManager() {
   })
 }
 
+// Removes the selected department from the DB
 function removeDept() {
   db.findAllDept()
   .then(([rows]) => {
@@ -412,6 +417,7 @@ function removeDept() {
   })
 }
 
+// Removes the selected role from the DB
 function removeRole() {
   db.findAllRoles()
   .then(([rows]) => {
@@ -438,6 +444,7 @@ function removeRole() {
   })
 }
 
+// Removes the selected employee from the DB
 function removeEmployee() {
   db.findAll()
   .then(([rows]) => {
